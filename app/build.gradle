@@ -35,10 +35,10 @@ android {
         viewBinding true
     }
 
-    packagingOptions {
-        pickFirst 'META-INF/DEPENDENCIES'
-        pickFirst 'META-INF/LICENSE'
-        pickFirst 'META-INF/NOTICE'
+    packaging {
+        resources {
+            pickFirsts += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/NOTICE']
+        }
     }
 }
 
