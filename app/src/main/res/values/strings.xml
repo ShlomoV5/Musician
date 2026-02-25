@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Musician</string>
+    <string name="start_recording">Start\nRecording</string>
+    <string name="stop_recording">Stop\nRecording</string>
+    <string name="press_record">Press Record to Start</string>
+    <string name="analyzing">Analyzing…</string>
+    <string name="permission_denied">Microphone permission is required to analyze audio.</string>
+    <string name="result_note">Note:  %s</string>
+    <string name="result_scale">Scale: %s</string>
+    <string name="result_bpm">BPM:   %s</string>
+</resources>

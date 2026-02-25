@@ -1,0 +1,4 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Musician" parent="Theme.Material3.DayNight.NoActionBar" />
+    <style name="Theme.Musician" parent="Base.Theme.Musician" />
+</resources>
