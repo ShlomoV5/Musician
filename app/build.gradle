@@ -49,5 +49,5 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // TarsosDSP for local pitch detection and BPM analysis
-    implementation 'be.tarsos.dsp:tarsosdsp-android:2.4'
+    implementation 'com.github.JorenSix:TarsosDSP:2.4'
 }
