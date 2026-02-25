@@ -50,5 +50,5 @@ dependencies {
 
     // TarsosDSP for local pitch detection and BPM analysis
     implementation 'be.tarsos.dsp:core:2.5'
-    implementation 'be.tarsos.dsp:android:2.5'
+    implementation 'be.tarsos.dsp:jvm:2.5'
 }
