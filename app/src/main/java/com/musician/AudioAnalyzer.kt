@@ -43,6 +43,7 @@ class AudioAnalyzer(
 
     /** Starts the analyzer placeholder and emits initial "Detecting…" values. */
     fun start() {
+        dispatcher?.stop()
         detectedPitchClasses.clear()
         onsetTimesMs.clear()
         onResultsUpdated("Detecting…", "Detecting…", "Detecting…")
