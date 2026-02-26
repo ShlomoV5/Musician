@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private var audioAnalyzer: AudioAnalyzer? = null
     private var isRecording = false
     private val logTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    private val maxLogLines = 6
 
     companion object {
         private const val REQUEST_RECORD_AUDIO = 200
@@ -38,7 +39,8 @@ class MainActivity : AppCompatActivity() {
         binding.btnRecord.setOnClickListener {
             if (isRecording) stopRecording() else checkPermissionAndRecord()
         }
-        binding.tvResults.text = getString(R.string.status_ready)
+        binding.tvStatus.text = getString(R.string.status_ready)
+        binding.tvResults.text = getString(R.string.press_record)
         appendLog("App ready.")
     }
 
@@ -81,7 +83,8 @@ class MainActivity : AppCompatActivity() {
     private fun startRecording() {
         isRecording = true
         binding.btnRecord.text = getString(R.string.stop_recording)
-        binding.tvResults.text = getString(R.string.status_listening)
+        binding.tvStatus.text = getString(R.string.status_listening)
+        binding.tvResults.text = getString(R.string.analyzing)
         appendLog("Recording started.")
 
         audioAnalyzer = AudioAnalyzer(
@@ -90,7 +93,8 @@ class MainActivity : AppCompatActivity() {
                     binding.tvNote.text  = getString(R.string.result_note,  note)
                     binding.tvScale.text = getString(R.string.result_scale, scale)
                     binding.tvBpm.text   = getString(R.string.result_bpm,   bpm)
-                    binding.tvResults.text = getString(R.string.analyzing)
+                    binding.tvStatus.text = getString(R.string.analyzing)
+                    binding.tvResults.text = ""
                 }
             },
             onStatusUpdated = { status ->
@@ -107,7 +111,8 @@ class MainActivity : AppCompatActivity() {
         binding.btnRecord.text = getString(R.string.start_recording)
         audioAnalyzer?.stop()
         audioAnalyzer = null
-        binding.tvResults.text = getString(R.string.status_stopped)
+        binding.tvStatus.text = getString(R.string.status_stopped)
+        binding.tvResults.text = getString(R.string.press_record)
         appendLog("Recording stopped.")
     }
 
@@ -118,8 +123,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendLog(message: String) {
         val timestamp = logTimeFormat.format(Date())
-        val existing = binding.tvLog.text?.toString().orEmpty()
-        val nextLine = "[$timestamp] $message"
-        binding.tvLog.text = if (existing.isBlank()) nextLine else "$nextLine\n$existing"
+        val lines = binding.tvLog.text
+            ?.toString()
+            .orEmpty()
+            .lineSequence()
+            .filter { it.isNotBlank() }
+            .toMutableList()
+        lines.add(0, "[$timestamp] $message")
+        if (lines.size > maxLogLines) {
+            lines.subList(maxLogLines, lines.size).clear()
+        }
+        binding.tvLog.text = lines.joinToString("\n")
     }
 }
