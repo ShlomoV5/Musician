@@ -4,6 +4,10 @@
     <string name="stop_recording">Stop\nRecording</string>
     <string name="press_record">Press Record to Start</string>
     <string name="analyzing">Analyzing…</string>
+    <string name="status_ready">Ready to analyze audio.</string>
+    <string name="status_listening">Listening to microphone…</string>
+    <string name="status_stopped">Recording stopped.</string>
+    <string name="analysis_log_title">Activity</string>
     <string name="permission_denied">Microphone permission is required to analyze audio.</string>
     <string name="result_note">Note:  %s</string>
     <string name="result_scale">Scale: %s</string>

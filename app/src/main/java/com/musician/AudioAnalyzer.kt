@@ -8,7 +8,10 @@ import kotlin.math.roundToInt
  *
  * @param onResultsUpdated callback invoked with (note, scale, bpm) strings.
  */
-class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit) {
+class AudioAnalyzer(
+    private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit,
+    private val onStatusUpdated: (status: String) -> Unit = {}
+) {
 
     // Ring buffers – capped to avoid unbounded memory growth
     private val detectedPitchClasses = ArrayDeque<Int>(MAX_NOTES)
@@ -40,6 +43,7 @@ class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, 
 
     /** Starts the analyzer placeholder and emits initial "Detecting…" values. */
     fun start() {
+        dispatcher?.stop()
         detectedPitchClasses.clear()
         onsetTimesMs.clear()
         onResultsUpdated("Detecting…", "Detecting…", "Detecting…")
