@@ -20,7 +20,10 @@ import kotlin.math.roundToInt
  *
  * @param onResultsUpdated callback invoked on each analysis update with (note, scale, bpm) strings.
  */
-class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit) {
+class AudioAnalyzer(
+    private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit,
+    private val onStatusUpdated: (status: String) -> Unit = {}
+) {
 
     private var dispatcher: AudioDispatcher? = null
 
@@ -56,13 +59,22 @@ class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, 
     fun start() {
         detectedPitchClasses.clear()
         onsetTimesMs.clear()
+        onStatusUpdated("Microphone initialized.")
 
         dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(SAMPLE_RATE, BUFFER_SIZE, BUFFER_OVERLAP)
+        onStatusUpdated("Listening for pitch and rhythm.")
+
+        var hasReportedPitch = false
+        var hasReportedTempo = false
 
         // --- Pitch detection (YIN) ---
         val pitchHandler = PitchDetectionHandler { result, _ ->
             val hz = result.pitch
             if (hz > 0f) {
+                if (!hasReportedPitch) {
+                    onStatusUpdated("Pitch detected. Calculating note and scale.")
+                    hasReportedPitch = true
+                }
                 val midi = hzToMidi(hz)
                 val pitchClass = ((midi % 12) + 12) % 12
                 if (detectedPitchClasses.size >= MAX_NOTES) detectedPitchClasses.removeFirst()
@@ -84,6 +96,10 @@ class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, 
             val now = System.currentTimeMillis()
             if (onsetTimesMs.size >= MAX_ONSETS) onsetTimesMs.removeFirst()
             onsetTimesMs.addLast(now)
+            if (!hasReportedTempo && onsetTimesMs.size >= MIN_ONSETS_FOR_BPM) {
+                onStatusUpdated("Rhythm detected. Estimating BPM.")
+                hasReportedTempo = true
+            }
         })
         dispatcher?.addAudioProcessor(onsetDetector)
 
@@ -94,6 +110,7 @@ class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, 
     fun stop() {
         dispatcher?.stop()
         dispatcher = null
+        onStatusUpdated("Audio analyzer stopped.")
     }
 
     // -------------------------------------------------------------------------
