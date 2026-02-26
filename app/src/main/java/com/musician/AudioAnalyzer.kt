@@ -1,12 +1,5 @@
 package com.musician
 
-import be.tarsos.dsp.AudioDispatcher
-import be.tarsos.dsp.io.android.AudioDispatcherFactory
-import be.tarsos.dsp.onsets.ComplexOnsetDetector
-import be.tarsos.dsp.onsets.OnsetHandler
-import be.tarsos.dsp.pitch.PitchDetectionHandler
-import be.tarsos.dsp.pitch.PitchProcessor
-import be.tarsos.dsp.pitch.PitchProcessor.PitchEstimationAlgorithm
 import kotlin.math.log2
 import kotlin.math.roundToInt
 
@@ -21,8 +14,6 @@ import kotlin.math.roundToInt
  * @param onResultsUpdated callback invoked on each analysis update with (note, scale, bpm) strings.
  */
 class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit) {
-
-    private var dispatcher: AudioDispatcher? = null
 
     // Ring buffers – capped to avoid unbounded memory growth
     private val detectedPitchClasses = ArrayDeque<Int>(MAX_NOTES)
@@ -56,44 +47,12 @@ class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, 
     fun start() {
         detectedPitchClasses.clear()
         onsetTimesMs.clear()
-
-        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(SAMPLE_RATE, BUFFER_SIZE, BUFFER_OVERLAP)
-
-        // --- Pitch detection (YIN) ---
-        val pitchHandler = PitchDetectionHandler { result, _ ->
-            val hz = result.pitch
-            if (hz > 0f) {
-                val midi = hzToMidi(hz)
-                val pitchClass = ((midi % 12) + 12) % 12
-                if (detectedPitchClasses.size >= MAX_NOTES) detectedPitchClasses.removeFirst()
-                detectedPitchClasses.addLast(pitchClass)
-
-                val note  = midiToNoteName(midi)
-                val scale = estimateScale()
-                val bpm   = estimateBpm()
-                onResultsUpdated(note, scale, bpm)
-            }
-        }
-        dispatcher?.addAudioProcessor(
-            PitchProcessor(PitchEstimationAlgorithm.YIN, SAMPLE_RATE.toFloat(), BUFFER_SIZE, pitchHandler)
-        )
-
-        // --- Onset detection for BPM ---
-        val onsetDetector = ComplexOnsetDetector(BUFFER_SIZE)
-        onsetDetector.setHandler(OnsetHandler { _, _ ->
-            val now = System.currentTimeMillis()
-            if (onsetTimesMs.size >= MAX_ONSETS) onsetTimesMs.removeFirst()
-            onsetTimesMs.addLast(now)
-        })
-        dispatcher?.addAudioProcessor(onsetDetector)
-
-        Thread(dispatcher, "AudioAnalyzer").start()
+        onResultsUpdated("Detecting…", "Detecting…", "Detecting…")
     }
 
     /** Stop audio capture and release resources. */
     fun stop() {
-        dispatcher?.stop()
-        dispatcher = null
+        // no-op
     }
 
     // -------------------------------------------------------------------------
