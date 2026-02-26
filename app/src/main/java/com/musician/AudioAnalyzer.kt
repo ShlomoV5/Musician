@@ -4,14 +4,9 @@ import kotlin.math.log2
 import kotlin.math.roundToInt
 
 /**
- * AudioAnalyzer uses TarsosDSP to perform on-device analysis of microphone audio.
+ * AudioAnalyzer currently provides placeholder analysis values.
  *
- * Detects:
- *  - Pitch / musical note (YIN algorithm)
- *  - Scale (matched against major / modal patterns from accumulated notes)
- *  - Tempo / BPM (derived from inter-onset intervals via ComplexOnsetDetector)
- *
- * @param onResultsUpdated callback invoked on each analysis update with (note, scale, bpm) strings.
+ * @param onResultsUpdated callback invoked with (note, scale, bpm) strings.
  */
 class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit) {
 
@@ -43,16 +38,16 @@ class AudioAnalyzer(private val onResultsUpdated: (note: String, scale: String, 
         )
     }
 
-    /** Start capturing audio from the default microphone and analyzing it. */
+    /** Starts the analyzer placeholder and emits initial "Detecting…" values. */
     fun start() {
         detectedPitchClasses.clear()
         onsetTimesMs.clear()
         onResultsUpdated("Detecting…", "Detecting…", "Detecting…")
     }
 
-    /** Stop audio capture and release resources. */
+    /** Stops the analyzer placeholder; there are no running resources to release. */
     fun stop() {
-        // no-op
+        // No active audio dispatcher in placeholder implementation.
     }
 
     // -------------------------------------------------------------------------
