@@ -1,31 +1,17 @@
 package com.musician
 
-import be.tarsos.dsp.AudioDispatcher
-import be.tarsos.dsp.io.android.AudioDispatcherFactory
-import be.tarsos.dsp.onsets.ComplexOnsetDetector
-import be.tarsos.dsp.onsets.OnsetHandler
-import be.tarsos.dsp.pitch.PitchDetectionHandler
-import be.tarsos.dsp.pitch.PitchProcessor
-import be.tarsos.dsp.pitch.PitchProcessor.PitchEstimationAlgorithm
 import kotlin.math.log2
 import kotlin.math.roundToInt
 
 /**
- * AudioAnalyzer uses TarsosDSP to perform on-device analysis of microphone audio.
+ * AudioAnalyzer currently provides placeholder analysis values.
  *
- * Detects:
- *  - Pitch / musical note (YIN algorithm)
- *  - Scale (matched against major / modal patterns from accumulated notes)
- *  - Tempo / BPM (derived from inter-onset intervals via ComplexOnsetDetector)
- *
- * @param onResultsUpdated callback invoked on each analysis update with (note, scale, bpm) strings.
+ * @param onResultsUpdated callback invoked with (note, scale, bpm) strings.
  */
 class AudioAnalyzer(
     private val onResultsUpdated: (note: String, scale: String, bpm: String) -> Unit,
     private val onStatusUpdated: (status: String) -> Unit = {}
 ) {
-
-    private var dispatcher: AudioDispatcher? = null
 
     // Ring buffers – capped to avoid unbounded memory growth
     private val detectedPitchClasses = ArrayDeque<Int>(MAX_NOTES)
@@ -55,62 +41,16 @@ class AudioAnalyzer(
         )
     }
 
-    /** Start capturing audio from the default microphone and analyzing it. */
+    /** Starts the analyzer placeholder and emits initial "Detecting…" values. */
     fun start() {
         detectedPitchClasses.clear()
         onsetTimesMs.clear()
-        onStatusUpdated("Microphone initialized.")
-
-        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(SAMPLE_RATE, BUFFER_SIZE, BUFFER_OVERLAP)
-        onStatusUpdated("Listening for pitch and rhythm.")
-
-        var hasReportedPitch = false
-        var hasReportedTempo = false
-
-        // --- Pitch detection (YIN) ---
-        val pitchHandler = PitchDetectionHandler { result, _ ->
-            val hz = result.pitch
-            if (hz > 0f) {
-                if (!hasReportedPitch) {
-                    onStatusUpdated("Pitch detected. Calculating note and scale.")
-                    hasReportedPitch = true
-                }
-                val midi = hzToMidi(hz)
-                val pitchClass = ((midi % 12) + 12) % 12
-                if (detectedPitchClasses.size >= MAX_NOTES) detectedPitchClasses.removeFirst()
-                detectedPitchClasses.addLast(pitchClass)
-
-                val note  = midiToNoteName(midi)
-                val scale = estimateScale()
-                val bpm   = estimateBpm()
-                onResultsUpdated(note, scale, bpm)
-            }
-        }
-        dispatcher?.addAudioProcessor(
-            PitchProcessor(PitchEstimationAlgorithm.YIN, SAMPLE_RATE.toFloat(), BUFFER_SIZE, pitchHandler)
-        )
-
-        // --- Onset detection for BPM ---
-        val onsetDetector = ComplexOnsetDetector(BUFFER_SIZE)
-        onsetDetector.setHandler(OnsetHandler { _, _ ->
-            val now = System.currentTimeMillis()
-            if (onsetTimesMs.size >= MAX_ONSETS) onsetTimesMs.removeFirst()
-            onsetTimesMs.addLast(now)
-            if (!hasReportedTempo && onsetTimesMs.size >= MIN_ONSETS_FOR_BPM) {
-                onStatusUpdated("Rhythm detected. Estimating BPM.")
-                hasReportedTempo = true
-            }
-        })
-        dispatcher?.addAudioProcessor(onsetDetector)
-
-        Thread(dispatcher, "AudioAnalyzer").start()
+        onResultsUpdated("Detecting…", "Detecting…", "Detecting…")
     }
 
-    /** Stop audio capture and release resources. */
+    /** Stops the analyzer placeholder; there are no running resources to release. */
     fun stop() {
-        dispatcher?.stop()
-        dispatcher = null
-        onStatusUpdated("Audio analyzer stopped.")
+        // No active audio dispatcher in placeholder implementation.
     }
 
     // -------------------------------------------------------------------------
